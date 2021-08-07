@@ -1,4 +1,7 @@
 __pycache__
+build
+dist
+*.spec
 .idea
 .env
 result.txt
