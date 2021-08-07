@@ -1,5 +1,5 @@
 # Opensubtitles subtitle downloader
-Simple python script to automatically download subtitles for every file found in a folder (recursively). You can also specify a language (available languages can be found [here](https://www.opensubtitles.org/addons/export_languages.php))
+Simple python script to automatically download subtitles for every video file found in a folder (recursively). You can also specify a language (available languages can be found [here](https://www.opensubtitles.org/addons/export_languages.php))
 
 # Usage
 - Download or clone the repository.
