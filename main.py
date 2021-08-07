@@ -1,13 +1,14 @@
-from dotenv import load_dotenv
-from argparse import ArgumentParser
-from os import path, getenv, getcwd, makedirs
-from shutil import rmtree, move
 import glob
-from tqdm import tqdm
+from argparse import ArgumentParser
+from os import getenv, makedirs
+from shutil import move
 
+from dotenv import load_dotenv
 from pythonopensubtitles.opensubtitles import OpenSubtitles
 from pythonopensubtitles.utils import File
+from tqdm import tqdm
 
+from utils import *
 
 EXTENSIONS = [
     'mp4',
@@ -42,8 +43,8 @@ def parse_args():
                         default='eng',
                         metavar='language')
 
-    args = parser.parse_args()
-    return args.path, args.language
+    r_args = parser.parse_args()
+    return r_args.path, r_args.language
 
 
 def get_video_files(f_path):
@@ -55,7 +56,7 @@ def get_video_files(f_path):
         c_files.append(glob.glob(a_path + ext, recursive=True))
 
     # Flattens list
-    flat = [item for sublist in c_files for item in sublist]
+    flat = flatten(c_files)
     print(f"Found {len(flat)} video files")
     return flat
 
@@ -63,7 +64,7 @@ def get_video_files(f_path):
 def download_subtitles(i_files, lang):
     id_l = []
     d_dict = {}
-    for file in tqdm(i_files, 'Downloading', unit_scale=True):
+    for file in tqdm(i_files, 'Querying'):
         fu = File(file)
         data = ost.search_subtitles([{
             'sublanguageid': lang,
@@ -83,21 +84,19 @@ def download_subtitles(i_files, lang):
     makedirs(tmp)
 
     id_l_e = [s + '.srt' for s in id_l]
-    ost.download_subtitles(
-        [id_l],
-        dict(zip(id_l, id_l_e)),  # We pair the subtitle IDs to (themselves + '.srt')
-        output_directory=tmp,
-        extension='srt'
-    )
 
-    for fp, id in zip([path.join(tmp, x) for x in id_l_e], id_l):
-        move(fp, d_dict[id])
+    id_l_new = chunks(id_l, 20)
+    id_l_e_new = chunks(id_l_e, 20)
+    for il, ile in tqdm(zip(id_l_new, id_l_e_new), 'Downloading chunks'):
+        ost.download_subtitles(
+            [il],
+            dict(zip(il, ile)),  # We pair the subtitle IDs to (themselves + '.srt')
+            output_directory=tmp,
+            extension='srt'
+        )
 
-
-def cleanup():
-    tmp = path.join(getcwd(), "/tmp")
-    if path.isdir(tmp):
-        rmtree(tmp)
+    for fp, s_id in zip([path.join(tmp, x) for x in id_l_e], id_l):
+        move(fp, d_dict[s_id])
 
 
 if __name__ == '__main__':
