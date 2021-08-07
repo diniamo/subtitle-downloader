@@ -74,14 +74,15 @@ def download_subtitles(i_files, lang):
 
         if len(data) == 0:
             print("No subtitles found")
-            exit()
+            exit(-1)
 
         id_subtitle_file = data[0].get('IDSubtitleFile')
         id_l.append(id_subtitle_file)
-        d_dict[id_subtitle_file] = path.dirname(file)
+        d_dict[id_subtitle_file] = path.join(path.dirname(file), path.basename(file).rsplit('.', 1)[0] + '.srt')
 
-    tmp = path.join(getcwd(), "/tmp")
-    makedirs(tmp)
+    tmp = path.join(getcwd(), "tmp")
+    if not path.isdir(tmp):
+        makedirs(tmp)
 
     id_l_e = [s + '.srt' for s in id_l]
 
@@ -89,7 +90,7 @@ def download_subtitles(i_files, lang):
     id_l_e_new = chunks(id_l_e, 20)
     for il, ile in tqdm(zip(id_l_new, id_l_e_new), 'Downloading chunks'):
         ost.download_subtitles(
-            [il],
+            il,
             dict(zip(il, ile)),  # We pair the subtitle IDs to (themselves + '.srt')
             output_directory=tmp,
             extension='srt'
