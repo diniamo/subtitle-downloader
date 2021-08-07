@@ -3,6 +3,8 @@ Simple python script to automatically download subtitles for every file found in
 
 # Usage
 - Download or clone the repository.
+- Edit the `dotenv-sample.txt` with your opensubtitles.com login details.
+- Rename `dotenv-sample.txt` to `.env`. (no filename, just the extension like that)
 - Install requirements:
 ```
 pip install -r requirements.txt

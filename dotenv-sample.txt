@@ -1,0 +1,2 @@
+L_USERNAME=<website login username>
+L_PASSWORD=<website login password>
