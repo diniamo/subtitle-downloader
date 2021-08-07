@@ -68,9 +68,6 @@ def download_subtitles(i_files, lang):
             'moviebytesize': fu.size
         }])
 
-        with open('result.txt', 'w') as w:
-            w.write(str(data))
-
         if len(data) == 0:
             print("No subtitles found")
             exit()
