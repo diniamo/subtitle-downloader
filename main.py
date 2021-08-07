@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from argparse import ArgumentParser
-from os import path, getenv
+from os import path, getenv, getcwd, makedirs
+from shutil import rmtree, move
 import glob
 from tqdm import tqdm
 
@@ -14,7 +15,7 @@ EXTENSIONS = [
     'avi'
 ]
 
-load_dotenv(path.join(path.dirname(path.realpath(__file__)), '.env'))
+load_dotenv(path.join(getcwd(), '.env'))
 ost = OpenSubtitles()
 ost.login(getenv('L_USERNAME', ''), getenv('L_PASSWORD', ''))
 
@@ -60,6 +61,8 @@ def get_video_files(f_path):
 
 
 def download_subtitles(i_files, lang):
+    id_l = []
+    d_dict = {}
     for file in tqdm(i_files, 'Downloading', unit_scale=True):
         fu = File(file)
         data = ost.search_subtitles([{
@@ -71,17 +74,35 @@ def download_subtitles(i_files, lang):
         if len(data) == 0:
             print("No subtitles found")
             exit()
-        id_subtitle_file = data[0].get('IDSubtitleFile')
 
-        ost.download_subtitles(
-            [id_subtitle_file],
-            {id_subtitle_file: file.rsplit('.', 1)[0]+'.srt'},
-            output_directory=path.dirname(file),
-            extension='srt'
-        )
+        id_subtitle_file = data[0].get('IDSubtitleFile')
+        id_l.append(id_subtitle_file)
+        d_dict[id_subtitle_file] = path.dirname(file)
+
+    tmp = path.join(getcwd(), "/tmp")
+    makedirs(tmp)
+
+    id_l_e = [s + '.srt' for s in id_l]
+    ost.download_subtitles(
+        [id_l],
+        dict(zip(id_l, id_l_e)),  # We pair the subtitle IDs to (themselves + '.srt')
+        output_directory=tmp,
+        extension='srt'
+    )
+
+    for fp, id in zip([path.join(tmp, x) for x in id_l_e], id_l):
+        move(fp, d_dict[id])
+
+
+def cleanup():
+    tmp = path.join(getcwd(), "/tmp")
+    if path.isdir(tmp):
+        rmtree(tmp)
 
 
 if __name__ == '__main__':
+    cleanup()
+
     args = parse_args()
     files = get_video_files(args[0])
 
@@ -89,4 +110,6 @@ if __name__ == '__main__':
         exit(-1)
 
     download_subtitles(files, args[1])
+
+    cleanup()
 
