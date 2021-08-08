@@ -40,7 +40,7 @@ def parse_args():
                         type=str,
                         help="The language to download the subtitles in",
                         choices=LANGUAGES,
-                        default='eng',
+                        default='en',
                         metavar='language')
 
     r_args = parser.parse_args()
