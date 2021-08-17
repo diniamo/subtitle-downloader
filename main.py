@@ -17,8 +17,6 @@ EXTENSIONS = [
 ]
 
 load_dotenv(path.join(getcwd(), '.env'))
-ost = OpenSubtitles()
-ost.login(getenv('L_USERNAME', ''), getenv('L_PASSWORD', ''))
 
 with open("available_languages.txt", 'r') as f:
     LANGUAGES = f.read().splitlines()
@@ -62,6 +60,9 @@ def get_video_files(f_path):
 
 
 def download_subtitles(i_files, lang):
+    ost = OpenSubtitles()
+    ost.login(getenv('L_USERNAME', ''), getenv('L_PASSWORD', ''))
+
     id_l = []
     d_dict = {}
     for file in tqdm(i_files, 'Querying'):
